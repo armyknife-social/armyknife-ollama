@@ -2301,6 +2301,7 @@ Example:
 	importHfCmd.Flags().String("system", "", "System prompt for the model")
 	importHfCmd.Flags().String("tag", "", "Local model tag (default: derived from HF model name)")
 	importHfCmd.Flags().Bool("push", false, "Push to registry after import")
+	importHfCmd.Flags().Bool("skip-scan", false, "Skip securegit security scan before import")
 	importHfCmd.Flags().String("source-model", "", "Original source model before hardening (provenance)")
 	importHfCmd.Flags().Int("scan-findings", 0, "Number of security findings from scan (provenance)")
 	importHfCmd.Flags().Float64("fix-rate", 0, "Fix rate from hardening pipeline (provenance)")
