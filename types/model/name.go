@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -36,22 +37,29 @@ func Unqualified(n Name) error {
 const MissingPart = "!MISSING!"
 
 const (
-	defaultHost           = "registry.ollama.ai"
+	ollamaDefaultHost     = "registry.ollama.ai"
 	defaultNamespace      = "library"
 	defaultTag            = "latest"
 	defaultProtocolScheme = "https"
 )
 
+// defaultHost returns the registry host, checking ARMYKNIFE_REGISTRY env var first,
+// then falling back to registry.ollama.ai.
+func defaultHost() string {
+	if h := strings.TrimSpace(os.Getenv("ARMYKNIFE_REGISTRY")); h != "" {
+		return h
+	}
+	return ollamaDefaultHost
+}
+
 // DefaultName returns a name with the default values for the host, namespace,
 // tag, and protocol scheme parts. The model and digest parts are empty.
 //
-//   - The default host is ("registry.ollama.ai")
-//   - The default namespace is ("library")
-//   - The default tag is ("latest")
-//   - The default protocol scheme is ("https")
+// The default host is determined by the ARMYKNIFE_REGISTRY environment variable,
+// falling back to "registry.ollama.ai" if not set.
 func DefaultName() Name {
 	return Name{
-		Host:           defaultHost,
+		Host:           defaultHost(),
 		Namespace:      defaultNamespace,
 		Tag:            defaultTag,
 		ProtocolScheme: defaultProtocolScheme,
@@ -231,7 +239,7 @@ func (n Name) String() string {
 func (n Name) DisplayShortest() string {
 	var sb strings.Builder
 
-	if !strings.EqualFold(n.Host, defaultHost) {
+	if !strings.EqualFold(n.Host, defaultHost()) {
 		sb.WriteString(n.Host)
 		sb.WriteByte('/')
 		sb.WriteString(n.Namespace)

@@ -2081,8 +2081,8 @@ func NewCLI() *cobra.Command {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:           "ollama",
-		Short:         "Large language model runner",
+		Use:           "armyknife-ollama",
+		Short:         "Hardened LLM model runner (Ollama fork)",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		CompletionOptions: cobra.CompletionOptions{
@@ -2101,6 +2101,13 @@ func NewCLI() *cobra.Command {
 	rootCmd.Flags().BoolP("version", "v", false, "Show version information")
 	rootCmd.Flags().Bool("verbose", false, "Show timings for response")
 	rootCmd.Flags().Bool("nowordwrap", false, "Don't wrap words to the next line automatically")
+	rootCmd.PersistentFlags().String("registry", "", "Override default model registry host (also: ARMYKNIFE_REGISTRY env var)")
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if reg, _ := cmd.Flags().GetString("registry"); reg != "" {
+			os.Setenv("ARMYKNIFE_REGISTRY", reg)
+		}
+		return nil
+	}
 
 	createCmd := &cobra.Command{
 		Use:   "create MODEL",
@@ -2275,6 +2282,31 @@ func NewCLI() *cobra.Command {
 		_ = runner.Execute(args[1:])
 	})
 
+	importHfCmd := &cobra.Command{
+		Use:   "import-hf HF_MODEL_ID",
+		Short: "Import a hardened model from HuggingFace and convert to GGUF",
+		Long: `Download a model from HuggingFace Hub, convert to GGUF format,
+quantize, and register it locally. Optionally push to a private registry.
+
+Example:
+  armyknife-ollama import-hf armyknifelabs-platform/qwen2.5-7b-Hardened \
+    --quant q4_k_m \
+    --system "You are a security-hardened assistant." \
+    --tag hardened/qwen2.5-7b:latest`,
+		Args: cobra.ExactArgs(1),
+		RunE: ImportHfHandler,
+	}
+
+	importHfCmd.Flags().String("quant", "q4_k_m", "Quantization level (e.g. q4_k_m, q5_k_m, q8_0)")
+	importHfCmd.Flags().String("system", "", "System prompt for the model")
+	importHfCmd.Flags().String("tag", "", "Local model tag (default: derived from HF model name)")
+	importHfCmd.Flags().Bool("push", false, "Push to registry after import")
+	importHfCmd.Flags().String("source-model", "", "Original source model before hardening (provenance)")
+	importHfCmd.Flags().Int("scan-findings", 0, "Number of security findings from scan (provenance)")
+	importHfCmd.Flags().Float64("fix-rate", 0, "Fix rate from hardening pipeline (provenance)")
+	importHfCmd.Flags().String("verdict", "", "Hardening verdict: PASS/FAIL (provenance)")
+	importHfCmd.Flags().String("pipeline-version", "", "Pipeline version that produced this model (provenance)")
+
 	envVars := envconfig.AsMap()
 
 	envs := []envconfig.EnvVar{envVars["OLLAMA_HOST"]}
@@ -2329,6 +2361,7 @@ func NewCLI() *cobra.Command {
 		stopCmd,
 		pullCmd,
 		pushCmd,
+		importHfCmd,
 		signinCmd,
 		loginCmd,
 		signoutCmd,

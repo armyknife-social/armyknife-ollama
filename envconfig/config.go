@@ -220,8 +220,10 @@ func String(s string) func() string {
 }
 
 var (
-	LLMLibrary = String("OLLAMA_LLM_LIBRARY")
-	Editor     = String("OLLAMA_EDITOR")
+	// ArmyknifeRegistry returns the custom registry host for armyknife models.
+	ArmyknifeRegistry = String("ARMYKNIFE_REGISTRY")
+	LLMLibrary        = String("OLLAMA_LLM_LIBRARY")
+	Editor            = String("OLLAMA_EDITOR")
 
 	CudaVisibleDevices    = String("CUDA_VISIBLE_DEVICES")
 	HipVisibleDevices     = String("HIP_VISIBLE_DEVICES")
@@ -301,6 +303,7 @@ func AsMap() map[string]EnvVar {
 		"OLLAMA_EDITOR":            {"OLLAMA_EDITOR", Editor(), "Path to editor for interactive prompt editing (Ctrl+G)"},
 		"OLLAMA_NEW_ENGINE":        {"OLLAMA_NEW_ENGINE", NewEngine(), "Enable the new Ollama engine"},
 		"OLLAMA_REMOTES":           {"OLLAMA_REMOTES", Remotes(), "Allowed hosts for remote models (default \"ollama.com\")"},
+		"ARMYKNIFE_REGISTRY":       {"ARMYKNIFE_REGISTRY", ArmyknifeRegistry(), "Custom registry host for armyknife hardened models"},
 
 		// Informational
 		"HTTP_PROXY":  {"HTTP_PROXY", String("HTTP_PROXY")(), "HTTP proxy"},

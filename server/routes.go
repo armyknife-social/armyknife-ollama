@@ -1645,6 +1645,9 @@ func (s *Server) GenerateRoutes(rc *ollama.Registry) (http.Handler, error) {
 	// Inference (Anthropic compatibility)
 	r.POST("/v1/messages", middleware.AnthropicMessagesMiddleware(), s.ChatHandler)
 
+	// ArmyKnife hardening provenance
+	r.GET("/api/provenance/:model", s.ProvenanceHandler)
+
 	if rc != nil {
 		// wrap old with new
 		rs := &registry.Local{
